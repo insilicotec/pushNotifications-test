@@ -19,17 +19,29 @@ function getRedis() {
 }
 
 // ─── VAPID ────────────────────────────────────────────────────────────────────
+
+// Remove aspas, espaços e padding "=" que podem ser inseridos acidentalmente
+function sanitizeKey(key) {
+  if (!key) return key;
+  return key
+    .trim()
+    .replace(/^["']|["']$/g, '') // remove aspas no início/fim
+    .replace(/=+$/, '');          // remove padding base64 (= no final)
+}
+
 function configureWebPush() {
-  const publicKey  = process.env.VAPID_PUBLIC_KEY;
-  const privateKey = process.env.VAPID_PRIVATE_KEY;
+  const publicKey  = sanitizeKey(process.env.VAPID_PUBLIC_KEY);
+  const privateKey = sanitizeKey(process.env.VAPID_PRIVATE_KEY);
   const mailto     = process.env.VAPID_MAILTO || 'mailto:admin@exemplo.com';
 
   if (!publicKey || !privateKey) {
     throw new Error(
       'Variáveis VAPID_PUBLIC_KEY e VAPID_PRIVATE_KEY não configuradas.\n' +
-      'Gere as chaves com: npx web-push generate-vapid-keys'
+      'Adicione-as em: Vercel → Projeto → Settings → Environment Variables'
     );
   }
+
+  console.log('[VAPID] Public key (primeiros 20 chars):', publicKey.slice(0, 20) + '...');
 
   webpush.setVapidDetails(mailto, publicKey, privateKey);
   return { publicKey, privateKey };
