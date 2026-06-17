@@ -787,6 +787,61 @@
         font-size: 20px;
       }
     }
+
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 640px) {
+      .grid-2col {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
+    /* ── Timer Styles ────────────────────────────────────────────────────────── */
+    .timer-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      margin-top: 10px;
+      animation: fadeIn 0.3s ease;
+      width: 100%;
+    }
+
+    .countdown-display {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--cyan);
+      text-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+      animation: pulse 1.5s ease-in-out infinite;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timer-progress-container {
+      width: 100%;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      position: relative;
+    }
+
+    .timer-progress-bar {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, var(--cyan) 0%, var(--purple) 100%);
+      transition: width 1s linear;
+      border-radius: 6px;
+    }
   </style>
 </head>
 
@@ -904,7 +959,7 @@
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="grid-2col">
           <div>
             <div class="form-group">
               <label class="form-label" for="notifTitle">Título</label>
@@ -933,8 +988,79 @@
             </button>
           </div>
         </div>
+      </div>
 
-        @media (max-width: 640px) { .card-full > div { grid-template-columns: 1fr !important; } }
+      <!-- Card: Agendar Notificação (Timer) -->
+      <div class="card card-full">
+        <div class="card-header">
+          <div class="card-icon icon-cyan">⏳</div>
+          <div>
+            <div class="card-title">Agendar Notificação (Timer)</div>
+            <div class="card-subtitle">Define um tempo de espera para disparar o push</div>
+          </div>
+        </div>
+
+        <!-- Formulário de Configuração do Timer -->
+        <div class="grid-2col" id="timerSetupForm">
+          <div>
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 16px;">
+              <div>
+                <label class="form-label" for="timerDelay">Tempo de Espera</label>
+                <input class="form-input" type="number" id="timerDelay" min="1" value="10" placeholder="Ex: 10" />
+              </div>
+              <div>
+                <label class="form-label" for="timerUnit">Unidade</label>
+                <select class="form-input" id="timerUnit" style="appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%238888aa%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpolyline points=%226 9 12 15 18 9%22%3E%3C%2polyline%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px;">
+                  <option value="s">Segundos</option>
+                  <option value="m">Minutos</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="timerTitle">Título</label>
+              <input class="form-input" type="text" id="timerTitle" placeholder="Ex: Notificação agendada!"
+                value="⏳ Notificação com Timer!" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="timerBody">Mensagem</label>
+              <textarea class="form-textarea" id="timerBody"
+                placeholder="Conteúdo da notificação...">Esta notificação foi agendada e chegou após o tempo definido! ⏰</textarea>
+            </div>
+          </div>
+          <div>
+            <div class="form-group">
+              <label class="form-label" for="timerUrl">URL ao clicar</label>
+              <input class="form-input" type="text" id="timerUrl" placeholder="https://..." value="/" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="timerTag">Tag (agrupa notificações)</label>
+              <input class="form-input" type="text" id="timerTag" placeholder="Ex: timer, alerta"
+                value="timer-push" />
+            </div>
+            <button class="btn btn-primary" id="btnStartTimer" onclick="startTimerNotification()">
+              <span class="btn-text">⏳ Iniciar Timer</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Painel de Contagem Regressiva (oculto por padrão) -->
+        <div id="timerCountdownPanel" style="display: none; flex-direction: column; align-items: center; gap: 16px;">
+          <div style="text-align: center;">
+            <div class="card-title" style="font-size: 18px; margin-bottom: 4px;">⏳ Contagem Regressiva Ativa</div>
+            <div class="card-subtitle">Sua notificação agendada será disparada em breve</div>
+          </div>
+          
+          <div class="timer-container">
+            <div class="countdown-display" id="countdownText">00:10</div>
+            <div class="timer-progress-container">
+              <div class="timer-progress-bar" id="timerProgressBar" style="width: 100%;"></div>
+            </div>
+          </div>
+
+          <button class="btn btn-danger" id="btnCancelTimer" onclick="cancelTimerNotification()" style="max-width: 200px; margin-top: 8px;">
+            ❌ Cancelar Timer
+          </button>
+        </div>
       </div>
 
       <!-- Card: Chave VAPID -->
@@ -985,6 +1111,7 @@
     let currentSubscription = null;
     let totalSent = 0;
     let totalFailed = 0;
+    let timerInterval = null;
 
     // ── Utils ─────────────────────────────────────────────────────────────────
     function log(msg, type = 'info') {
@@ -1262,6 +1389,117 @@
         showToast('Erro ao enviar', err.message, '❌');
       } finally {
         setLoading('btnSend', false);
+      }
+    }
+
+    // ── Timer/Agendamento ─────────────────────────────────────────────────────
+    function resetTimerUI() {
+      document.getElementById('timerSetupForm').style.display = 'grid';
+      document.getElementById('timerCountdownPanel').style.display = 'none';
+      const progressBar = document.getElementById('timerProgressBar');
+      progressBar.style.width = '100%';
+    }
+
+    function startTimerNotification() {
+      if (Notification.permission !== 'granted') {
+        showToast('Permissão pendente', 'Por favor, ative as notificações primeiro!', '⚠️');
+        log('⚠️ Tentativa de agendar notificação sem permissão concedida.', 'warn');
+        return;
+      }
+
+      if (!currentSubscription) {
+        log('⚠️ Você não está inscrito neste navegador, mas o agendamento foi feito. A notificação será enviada para todos os outros subscribers ativos do servidor.', 'warn');
+        showToast('Nota', 'A notificação será enviada a todos os inscritos.', 'ℹ️');
+      }
+
+      const delayInput = document.getElementById('timerDelay');
+      const delayVal = parseInt(delayInput.value, 10);
+      if (isNaN(delayVal) || delayVal < 1) {
+        showToast('Valor inválido', 'Digite um tempo de espera válido maior que 0.', '⚠️');
+        return;
+      }
+
+      const unit = document.getElementById('timerUnit').value;
+      let timeRemaining = unit === 'm' ? delayVal * 60 : delayVal;
+      const totalDuration = timeRemaining;
+
+      // Ocultar formulário de setup e exibir contagem regressiva
+      document.getElementById('timerSetupForm').style.display = 'none';
+      const panel = document.getElementById('timerCountdownPanel');
+      panel.style.display = 'flex';
+
+      const countdownText = document.getElementById('countdownText');
+      const progressBar = document.getElementById('timerProgressBar');
+
+      function updateDisplay() {
+        const mins = Math.floor(timeRemaining / 60);
+        const secs = timeRemaining % 60;
+        countdownText.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        
+        // Progresso suave
+        const percentage = (timeRemaining / totalDuration) * 100;
+        progressBar.style.width = `${percentage}%`;
+      }
+
+      updateDisplay();
+      log(`⏳ Timer iniciado: enviando push em ${delayVal} ${unit === 'm' ? 'minuto(s)' : 'segundo(s)'}...`, 'info');
+
+      timerInterval = setInterval(() => {
+        timeRemaining--;
+        updateDisplay();
+
+        if (timeRemaining <= 0) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+          triggerTimerNotification();
+        }
+      }, 1000);
+    }
+
+    function cancelTimerNotification() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      log('⚠️ Agendamento cancelado pelo usuário.', 'warn');
+      showToast('Cancelado', 'Envio agendado cancelado.', '🔕');
+      resetTimerUI();
+    }
+
+    async function triggerTimerNotification() {
+      log('⏰ Timer finalizado! Solicitando envio de notificação agendada...', 'info');
+      resetTimerUI();
+
+      const payload = {
+        title: document.getElementById('timerTitle').value || '⏳ Notificação com Timer!',
+        body: document.getElementById('timerBody').value || 'Esta notificação chegou após o tempo definido!',
+        url: document.getElementById('timerUrl').value || '/',
+        tag: document.getElementById('timerTag').value || 'timer-push',
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/api/send-notification`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || `Erro ${res.status}`);
+        }
+
+        totalSent += data.stats.sent;
+        totalFailed += data.stats.failed;
+
+        log(`✅ Notificação agendada enviada! ${data.stats.sent} entregues, ${data.stats.failed} falhas.`, 'ok');
+        showToast('Enviada!', 'Notificação agendada entregue.', '🚀');
+        updateStats();
+
+      } catch (err) {
+        log(`❌ Erro ao enviar notificação agendada: ${err.message}`, 'error');
+        showToast('Erro ao enviar', err.message, '❌');
       }
     }
 
