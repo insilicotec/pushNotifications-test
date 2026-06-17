@@ -10,9 +10,11 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido' });
 
   // Verifica Redis antes de continuar
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+  const hasRedis = (process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL) &&
+                   (process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN);
+  if (!hasRedis) {
     return res.status(503).json({
-      error: 'Banco de dados Redis não configurado. Adicione a integração Upstash na Vercel e faça redeploy.',
+      error: 'Banco de dados Redis não configurado. Conecte o Upstash ao projeto na Vercel (Storage → Connect to Project) e faça redeploy.',
     });
   }
 

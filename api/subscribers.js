@@ -9,8 +9,8 @@ module.exports = async (req, res) => {
   }
 
   // Redis ainda não configurado — retorna 0 sem erro
-  const url   = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const url   = process.env.UPSTASH_REDIS_REST_URL  || process.env.KV_REST_API_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
   if (!url || !token) {
     return res.status(200).json({ count: 0, subscribers: [], warning: 'Redis não configurado' });
   }

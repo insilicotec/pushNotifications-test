@@ -4,13 +4,14 @@ const webpush   = require('web-push');
 
 // ─── Redis ────────────────────────────────────────────────────────────────────
 function getRedis() {
-  const url   = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  // Aceita tanto o prefixo UPSTASH_ (legado) quanto KV_ (novo padrão da Vercel/Upstash)
+  const url   = process.env.UPSTASH_REDIS_REST_URL  || process.env.KV_REST_API_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
 
   if (!url || !token) {
     throw new Error(
-      'Variáveis UPSTASH_REDIS_REST_URL e UPSTASH_REDIS_REST_TOKEN não configuradas.\n' +
-      'Crie um banco Redis na Vercel → Integrations → Upstash e adicione as variáveis de ambiente.'
+      'Variáveis Redis não configuradas. ' +
+      'Conecte o banco Upstash ao projeto na Vercel (Storage → Connect to Project).'
     );
   }
 
