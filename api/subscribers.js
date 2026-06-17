@@ -8,6 +8,13 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Método não permitido' });
   }
 
+  // Redis ainda não configurado — retorna 0 sem erro
+  const url   = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) {
+    return res.status(200).json({ count: 0, subscribers: [], warning: 'Redis não configurado' });
+  }
+
   try {
     const redis = getRedis();
     const ids   = await redis.smembers('subscriptions:index');
@@ -19,6 +26,7 @@ module.exports = async (req, res) => {
 
   } catch (err) {
     console.error('[subscribers] Erro:', err.message);
-    return res.status(500).json({ error: err.message });
+    // Falha no Redis não deve derrubar a UI — retorna 0
+    return res.status(200).json({ count: 0, subscribers: [], warning: err.message });
   }
 };

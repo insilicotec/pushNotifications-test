@@ -9,6 +9,13 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido' });
 
+  // Verifica Redis antes de continuar
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    return res.status(503).json({
+      error: 'Banco de dados Redis não configurado. Adicione a integração Upstash na Vercel e faça redeploy.',
+    });
+  }
+
   const subscription = req.body;
 
   if (!subscription || !subscription.endpoint) {
